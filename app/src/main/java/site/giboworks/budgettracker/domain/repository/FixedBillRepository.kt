@@ -29,6 +29,16 @@ interface FixedBillRepository {
     fun observePaid(): Flow<List<FixedBill>>
     
     /**
+     * Observe recurring bills only.
+     */
+    fun observeRecurring(): Flow<List<FixedBill>>
+    
+    /**
+     * Observe one-time (non-recurring) bills only.
+     */
+    fun observeOneTime(): Flow<List<FixedBill>>
+    
+    /**
      * Observe a single bill by ID.
      */
     fun observeById(id: Long): Flow<FixedBill?>
@@ -135,7 +145,12 @@ interface FixedBillRepository {
     
     /**
      * Reset all bills to unpaid state for new budget cycle.
-     * Should be called on pay day.
+     * Should be called on pay day. Only resets recurring bills.
      */
     suspend fun resetAllBillsForNewCycle()
+    
+    /**
+     * Delete all paid one-time bills (cleanup after cycle).
+     */
+    suspend fun deletePaidOneTimeBills()
 }

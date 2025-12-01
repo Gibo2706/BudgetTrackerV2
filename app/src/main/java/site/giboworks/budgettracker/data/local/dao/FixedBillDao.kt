@@ -76,6 +76,18 @@ interface FixedBillDao {
     fun observePaid(): Flow<List<FixedBillEntity>>
     
     /**
+     * Get all recurring bills.
+     */
+    @Query("SELECT * FROM fixed_bills WHERE isRecurring = 1 ORDER BY dayDue ASC, sortOrder ASC")
+    fun observeRecurring(): Flow<List<FixedBillEntity>>
+    
+    /**
+     * Get all one-time (non-recurring) bills.
+     */
+    @Query("SELECT * FROM fixed_bills WHERE isRecurring = 0 ORDER BY dayDue ASC, sortOrder ASC")
+    fun observeOneTime(): Flow<List<FixedBillEntity>>
+    
+    /**
      * Get count of all bills.
      */
     @Query("SELECT COUNT(*) FROM fixed_bills")
@@ -140,15 +152,23 @@ interface FixedBillDao {
     suspend fun markAsUnpaid(billId: Long, timestamp: Long = System.currentTimeMillis())
     
     /**
-     * Reset all bills to unpaid state (called on pay day).
+     * Reset all recurring bills to unpaid state (called on pay day).
+     * Only resets recurring bills - one-time bills are not affected.
      */
     @Query("""
         UPDATE fixed_bills 
         SET isPaidThisMonth = 0, 
             actualAmountPaid = NULL,
             updatedAt = :timestamp
+        WHERE isRecurring = 1
     """)
     suspend fun resetAllBillsForNewCycle(timestamp: Long = System.currentTimeMillis())
+    
+    /**
+     * Delete all paid one-time bills (cleanup after cycle).
+     */
+    @Query("DELETE FROM fixed_bills WHERE isRecurring = 0 AND isPaidThisMonth = 1")
+    suspend fun deletePaidOneTimeBills()
     
     /**
      * Get total savings from variable bills (where actual < estimated).

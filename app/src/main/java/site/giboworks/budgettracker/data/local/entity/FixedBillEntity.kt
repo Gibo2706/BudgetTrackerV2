@@ -69,6 +69,13 @@ data class FixedBillEntity(
      */
     val sortOrder: Int = 0,
     
+    /**
+     * Whether this bill recurs every month.
+     * If false, the bill is a one-time expense and should be deleted after payment
+     * or excluded from future cycles.
+     */
+    val isRecurring: Boolean = true,
+    
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) {
@@ -84,7 +91,8 @@ data class FixedBillEntity(
             isPaidThisMonth = isPaidThisMonth,
             actualAmountPaid = actualAmountPaid,
             lastPaidAt = lastPaidAt,
-            icon = icon
+            icon = icon,
+            isRecurring = isRecurring
         )
     }
     
@@ -102,6 +110,7 @@ data class FixedBillEntity(
                 actualAmountPaid = bill.actualAmountPaid,
                 lastPaidAt = bill.lastPaidAt,
                 icon = bill.icon,
+                isRecurring = bill.isRecurring,
                 updatedAt = System.currentTimeMillis()
             )
         }

@@ -40,6 +40,18 @@ class FixedBillRepositoryImpl @Inject constructor(
         }
     }
     
+    override fun observeRecurring(): Flow<List<FixedBill>> {
+        return fixedBillDao.observeRecurring().map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+    
+    override fun observeOneTime(): Flow<List<FixedBill>> {
+        return fixedBillDao.observeOneTime().map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+    
     override fun observeById(id: Long): Flow<FixedBill?> {
         return fixedBillDao.observeById(id).map { entity ->
             entity?.toDomain()
@@ -127,5 +139,9 @@ class FixedBillRepositoryImpl @Inject constructor(
     
     override suspend fun resetAllBillsForNewCycle() {
         fixedBillDao.resetAllBillsForNewCycle()
+    }
+    
+    override suspend fun deletePaidOneTimeBills() {
+        fixedBillDao.deletePaidOneTimeBills()
     }
 }

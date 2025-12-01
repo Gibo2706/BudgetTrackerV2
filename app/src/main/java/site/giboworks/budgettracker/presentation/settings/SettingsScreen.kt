@@ -90,7 +90,8 @@ private val SurfaceCard = Color(0xFF21262D)
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onNavigateToNotificationSettings: () -> Unit = {}
+    onNavigateToNotificationSettings: () -> Unit = {},
+    onNavigateToManageBills: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
@@ -143,7 +144,14 @@ fun SettingsScreen(
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Section 3: App Settings
+                // Section 3: Bills Management
+                BillsManagementSection(
+                    onManageBillsClick = onNavigateToManageBills
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Section 4: App Settings
                 AppSettingsSection(
                     onNotificationSettingsClick = onNavigateToNotificationSettings
                 )
@@ -522,7 +530,30 @@ private fun WellbeingSection(
     }
 }
 
-// ==================== SECTION 3: APP SETTINGS ====================
+// ==================== SECTION 3: BILLS MANAGEMENT ====================
+
+@Composable
+private fun BillsManagementSection(
+    onManageBillsClick: () -> Unit
+) {
+    SectionCard(
+        title = "Bills",
+        subtitle = "Track your fixed monthly expenses",
+        icon = Icons.Filled.CalendarMonth,
+        iconTint = AccentGreen
+    ) {
+        // Manage Bills
+        SettingsListItem(
+            title = "Manage Bills",
+            subtitle = "Add, edit, or remove fixed bills",
+            icon = Icons.Filled.CalendarMonth,
+            iconTint = AccentGreen,
+            onClick = onManageBillsClick
+        )
+    }
+}
+
+// ==================== SECTION 4: APP SETTINGS ====================
 
 @Composable
 private fun AppSettingsSection(

@@ -14,7 +14,8 @@ data class FixedBill(
     val isPaidThisMonth: Boolean = false,
     val actualAmountPaid: Double? = null,
     val lastPaidAt: Long? = null,
-    val icon: String = "📄"
+    val icon: String = "📄",
+    val isRecurring: Boolean = true
 ) {
     /**
      * Get the effective paid amount.
@@ -67,16 +68,16 @@ data class FixedBill(
          * Common bill presets with suggested icons
          */
         val PRESETS = listOf(
-            FixedBill(name = "Rent", estimatedAmount = 0.0, icon = "🏠"),
-            FixedBill(name = "Electricity", estimatedAmount = 0.0, icon = "⚡"),
-            FixedBill(name = "Gas", estimatedAmount = 0.0, icon = "🔥"),
-            FixedBill(name = "Water", estimatedAmount = 0.0, icon = "💧"),
-            FixedBill(name = "Internet", estimatedAmount = 0.0, icon = "📶"),
-            FixedBill(name = "Phone", estimatedAmount = 0.0, icon = "📱"),
-            FixedBill(name = "Insurance", estimatedAmount = 0.0, icon = "🛡️"),
-            FixedBill(name = "Subscription", estimatedAmount = 0.0, icon = "📺"),
-            FixedBill(name = "Gym", estimatedAmount = 0.0, icon = "💪"),
-            FixedBill(name = "Other", estimatedAmount = 0.0, icon = "📄")
+            FixedBill(name = "Rent", estimatedAmount = 0.0, icon = "🏠", isRecurring = true),
+            FixedBill(name = "Electricity", estimatedAmount = 0.0, icon = "⚡", isRecurring = true),
+            FixedBill(name = "Gas", estimatedAmount = 0.0, icon = "🔥", isRecurring = true),
+            FixedBill(name = "Water", estimatedAmount = 0.0, icon = "💧", isRecurring = true),
+            FixedBill(name = "Internet", estimatedAmount = 0.0, icon = "📶", isRecurring = true),
+            FixedBill(name = "Phone", estimatedAmount = 0.0, icon = "📱", isRecurring = true),
+            FixedBill(name = "Insurance", estimatedAmount = 0.0, icon = "🛡️", isRecurring = true),
+            FixedBill(name = "Subscription", estimatedAmount = 0.0, icon = "📺", isRecurring = true),
+            FixedBill(name = "Gym", estimatedAmount = 0.0, icon = "💪", isRecurring = true),
+            FixedBill(name = "Other", estimatedAmount = 0.0, icon = "📄", isRecurring = true)
         )
         
         /**
@@ -112,7 +113,9 @@ data class BillsSummary(
     val totalEstimated: Double,
     val totalActualPaid: Double,
     val totalSavingsFromBills: Double,
-    val totalOverageFromBills: Double
+    val totalOverageFromBills: Double,
+    val recurringBillsCount: Int = 0,
+    val oneTimeBillsCount: Int = 0
 ) {
     val unpaidBills: Int get() = totalBills - paidBills
     val completionPercentage: Float get() = if (totalBills > 0) paidBills.toFloat() / totalBills else 0f
@@ -126,10 +129,12 @@ data class BillsSummary(
                 totalEstimated = bills.sumOf { it.estimatedAmount },
                 totalActualPaid = bills.sumOf { it.getEffectivePaidAmount() },
                 totalSavingsFromBills = bills.sumOf { it.getSavingsFromBill() },
-                totalOverageFromBills = bills.sumOf { it.getOverageFromBill() }
+                totalOverageFromBills = bills.sumOf { it.getOverageFromBill() },
+                recurringBillsCount = bills.count { it.isRecurring },
+                oneTimeBillsCount = bills.count { !it.isRecurring }
             )
         }
         
-        fun empty() = BillsSummary(0, 0, 0.0, 0.0, 0.0, 0.0)
+        fun empty() = BillsSummary(0, 0, 0.0, 0.0, 0.0, 0.0, 0, 0)
     }
 }

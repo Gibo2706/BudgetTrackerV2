@@ -17,6 +17,7 @@ import site.giboworks.budgettracker.presentation.history.TransactionHistoryScree
 import site.giboworks.budgettracker.presentation.insights.InsightsScreen
 import site.giboworks.budgettracker.presentation.onboarding.OnboardingScreen
 import site.giboworks.budgettracker.presentation.settings.BudgetSettingsScreen
+import site.giboworks.budgettracker.presentation.settings.ManageBillsScreen
 import site.giboworks.budgettracker.presentation.settings.SettingsScreen
 
 /**
@@ -88,7 +89,19 @@ fun BudgetTrackerNavGraph(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onNavigateToNotificationSettings = onNavigateToNotificationSettings
+                onNavigateToNotificationSettings = onNavigateToNotificationSettings,
+                onNavigateToManageBills = {
+                    navController.navigate(Screen.ManageBills.route)
+                }
+            )
+        }
+        
+        // Manage Bills - Add/Edit/Delete fixed bills
+        composable(route = Screen.ManageBills.route) {
+            ManageBillsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
         

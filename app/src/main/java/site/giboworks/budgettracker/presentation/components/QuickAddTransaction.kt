@@ -103,7 +103,6 @@ fun QuickAddTransactionSheet(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .imePadding()
-                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp)
         ) {
@@ -126,67 +125,74 @@ fun QuickAddTransactionSheet(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Amount Input
-            AmountInputField(
-                value = amountText,
-                onValueChange = { amountText = it },
-                currency = currency,
-                focusRequester = focusRequester,
-                onDone = { keyboardController?.hide() }
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Suggested Categories (Time-based prediction)
-            Text(
-                text = "Suggested",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            CategoryGrid(
-                categories = predictedCategories,
-                selectedCategory = selectedCategory,
-                onCategorySelected = { selectedCategory = it }
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // All Categories
-            Text(
-                text = "All Categories",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            CategoryGrid(
-                categories = getExpenseCategories().filterNot { it in predictedCategories },
-                selectedCategory = selectedCategory,
-                onCategorySelected = { selectedCategory = it }
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Optional Description
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Description (optional)") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+            // Scrollable content section
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // Amount Input
+                AmountInputField(
+                    value = amountText,
+                    onValueChange = { amountText = it },
+                    currency = currency,
+                    focusRequester = focusRequester,
+                    onDone = { keyboardController?.hide() }
                 )
-            )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Suggested Categories (Time-based prediction)
+                Text(
+                    text = "Suggested",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                CategoryGrid(
+                    categories = predictedCategories,
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = { selectedCategory = it }
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // All Categories
+                Text(
+                    text = "All Categories",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                CategoryGrid(
+                    categories = getExpenseCategories().filterNot { it in predictedCategories },
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = { selectedCategory = it }
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Optional Description
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description (optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                    )
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+            }
             
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Add Button
+            // Fixed Button at bottom (outside scroll)
             Button(
                 onClick = {
                     val amount = amountText.toDoubleOrNull() ?: 0.0
