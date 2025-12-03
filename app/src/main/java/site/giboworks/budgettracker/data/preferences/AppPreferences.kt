@@ -28,6 +28,8 @@ class AppPreferences @Inject constructor(
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
         val GHOST_MODE_ENABLED = booleanPreferencesKey("ghost_mode_enabled")
+        val AUTO_TRACK_INCOME = booleanPreferencesKey("auto_track_income")
+        val POST_NOTIFICATIONS_ASKED = booleanPreferencesKey("post_notifications_asked")
     }
     
     // ========== ONBOARDING STATE ==========
@@ -58,6 +60,22 @@ class AppPreferences @Inject constructor(
         }
     }
     
+    // ========== POST_NOTIFICATIONS PERMISSION (Android 13+) ==========
+    
+    val postNotificationsAsked: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.POST_NOTIFICATIONS_ASKED] ?: false
+    }
+    
+    suspend fun getPostNotificationsAsked(): Boolean {
+        return context.dataStore.data.first()[PreferencesKeys.POST_NOTIFICATIONS_ASKED] ?: false
+    }
+    
+    suspend fun setPostNotificationsAsked(asked: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.POST_NOTIFICATIONS_ASKED] = asked
+        }
+    }
+    
     // ========== GHOST MODE (PAUSE TRACKING) ==========
     
     /**
@@ -78,6 +96,29 @@ class AppPreferences @Inject constructor(
     suspend fun setGhostModeEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.GHOST_MODE_ENABLED] = enabled
+        }
+    }
+    
+    // ========== AUTO TRACK INCOME ==========
+    
+    /**
+     * If true, automatically parse and save income transactions (salary, refunds).
+     * Default: false - only expenses are auto-tracked.
+     * 
+     * This prevents false positives where bank balance notifications are 
+     * mistakenly classified as income.
+     */
+    val autoTrackIncome: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AUTO_TRACK_INCOME] ?: false
+    }
+    
+    suspend fun getAutoTrackIncome(): Boolean {
+        return context.dataStore.data.first()[PreferencesKeys.AUTO_TRACK_INCOME] ?: false
+    }
+    
+    suspend fun setAutoTrackIncome(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AUTO_TRACK_INCOME] = enabled
         }
     }
 }

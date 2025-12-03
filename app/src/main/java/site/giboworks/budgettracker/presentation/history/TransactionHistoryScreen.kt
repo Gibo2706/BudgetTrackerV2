@@ -1,6 +1,7 @@
 package site.giboworks.budgettracker.presentation.history
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -54,6 +60,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+private val AccentRed = Color(0xFFFF5252)
+
 /**
  * Transaction History Screen
  * 
@@ -68,11 +76,21 @@ fun TransactionHistoryScreen(
 ) {
     val transactions by viewModel.allTransactions.collectAsState()
     val monthlyStats by viewModel.monthlyStats.collectAsState()
+    val transactionToDelete by viewModel.transactionToDelete.collectAsState()
     
     // Group transactions by date
     val groupedTransactions = remember(transactions) {
         transactions.groupBy { it.timestamp.toLocalDate() }
             .toSortedMap(compareByDescending { it })
+    }
+    
+    // Delete confirmation dialog
+    transactionToDelete?.let { transaction ->
+        DeleteTransactionDialog(
+            transaction = transaction,
+            onConfirm = { viewModel.confirmDelete() },
+            onDismiss = { viewModel.dismissDeleteConfirmation() }
+        )
     }
     
     Scaffold(
@@ -141,6 +159,7 @@ fun TransactionHistoryScreen(
                 ) { transaction ->
                     HistoryTransactionItem(
                         transaction = transaction,
+                        onDelete = { viewModel.showDeleteConfirmation(transaction) },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                     )
                 }
@@ -276,6 +295,7 @@ private fun DateHeader(
 @Composable
 private fun HistoryTransactionItem(
     transaction: Transaction,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -371,8 +391,91 @@ private fun HistoryTransactionItem(
                 ),
                 color = color
             )
+            
+            Spacer(modifier = Modifier.width(4.dp))
+            
+            // Delete button
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = AccentRed.copy(alpha = 0.7f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun DeleteTransactionDialog(
+    transaction: Transaction,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Delete Transaction?",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Are you sure you want to delete this transaction?"
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = transaction.category.emoji,
+                            fontSize = 20.sp
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = transaction.description.ifBlank { transaction.category.displayName },
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = formatCurrency(transaction.amount),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = AccentRed)
+            ) {
+                Text("Delete", color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable

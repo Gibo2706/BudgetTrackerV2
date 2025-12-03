@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import site.giboworks.budgettracker.domain.model.Transaction
 import site.giboworks.budgettracker.domain.repository.TransactionRepository
 import java.time.YearMonth
@@ -23,6 +24,10 @@ import javax.inject.Inject
 class TransactionHistoryViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository
 ) : ViewModel() {
+    
+    // Delete confirmation state
+    private val _transactionToDelete = MutableStateFlow<Transaction?>(null)
+    val transactionToDelete: StateFlow<Transaction?> = _transactionToDelete.asStateFlow()
     
     // All transactions (sorted by date desc in repository)
     val allTransactions: StateFlow<List<Transaction>> = transactionRepository.observeAll()
@@ -53,4 +58,37 @@ class TransactionHistoryViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = MonthlyStats()
     )
+    
+    /**
+     * Show delete confirmation for a transaction
+     */
+    fun showDeleteConfirmation(transaction: Transaction) {
+        _transactionToDelete.value = transaction
+    }
+    
+    /**
+     * Dismiss delete confirmation
+     */
+    fun dismissDeleteConfirmation() {
+        _transactionToDelete.value = null
+    }
+    
+    /**
+     * Delete a transaction
+     */
+    fun deleteTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            transactionRepository.delete(transaction)
+            _transactionToDelete.value = null
+        }
+    }
+    
+    /**
+     * Confirm and delete the pending transaction
+     */
+    fun confirmDelete() {
+        _transactionToDelete.value?.let { transaction ->
+            deleteTransaction(transaction)
+        }
+    }
 }
